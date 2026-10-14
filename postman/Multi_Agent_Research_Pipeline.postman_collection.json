@@ -1,0 +1,465 @@
+{
+  "info": {
+    "_postman_id": "a8f3b612-4299-4c2f-b4b6-79c2980fae01",
+    "name": "Multi-Agent Research Pipeline (Phase 1 Evaluation)",
+    "description": "Postman collection covering Authentication, Document Ingestion, Modular Agent stages (Fig 4.1), and End-to-End Research Sessions.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00. Health & Status",
+      "item": [
+        {
+          "name": "Server Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01. Authentication",
+      "item": [
+        {
+          "name": "1. Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "    pm.collectionVariables.set('token', res.data.token);",
+                  "    console.log('JWT Token saved automatically:', res.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Final Year Student\",\n  \"email\": \"student@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"role\": \"researcher\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "2. Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "    pm.collectionVariables.set('token', res.data.token);",
+                  "    console.log('JWT Token saved automatically from Login');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "3. Get Profile (Protected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Document Ingestion",
+      "item": [
+        {
+          "name": "Upload Document (PDF/Text)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "document",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "title",
+                  "value": "Multi-Agent Systems in Healthcare Literature",
+                  "type": "text"
+                },
+                {
+                  "key": "authors",
+                  "value": "Smith et al., 2024",
+                  "type": "text"
+                },
+                {
+                  "key": "publicationYear",
+                  "value": "2024",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents", "upload"]
+            }
+          }
+        },
+        {
+          "name": "List User Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/documents",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "documents"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Multi-Agent Pipeline Stages (Fig. 4.1)",
+      "item": [
+        {
+          "name": "Stage 1: Research Planner Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"researchQuestion\": \"How do multi-agent architectures mitigate hallucinations in scientific literature extraction?\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agents/plan",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "agents", "plan"]
+            }
+          }
+        },
+        {
+          "name": "Stage 2: Information Retrieval Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userQuery\": \"What are the applications of Artificial Intelligence in disaster management?\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agents/retrieve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "agents", "retrieve"]
+            }
+          }
+        },
+        {
+          "name": "Stage 3: Analysis Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sources\": [\n    {\n      \"title\": \"Advancements in Multi-Agent Collaborative Frameworks\",\n      \"url\": \"https://arxiv.org/abs/2401.00001\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agents/analyze",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "agents", "analyze"]
+            }
+          }
+        },
+        {
+          "name": "Stage 4: Verification Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"claims\": [\n    {\n      \"statement\": \"Multi-agent orchestration improves factual consistency.\",\n      \"sourceRef\": \"Advancements in Multi-Agent Collaborative Frameworks\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agents/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "agents", "verify"]
+            }
+          }
+        },
+        {
+          "name": "Stage 5: Knowledge Graph Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topic\": \"Multi-Agent Scientific Research\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agents/knowledge-graph",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "agents", "knowledge-graph"]
+            }
+          }
+        },
+        {
+          "name": "Stage 6: Synthesis Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topic\": \"Multi-Agent Scientific Research\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agents/synthesize",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "agents", "synthesize"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. End-to-End Research Sessions",
+      "item": [
+        {
+          "name": "1. Create Research Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.session && res.data.session._id) {",
+                  "    pm.collectionVariables.set('sessionId', res.data.session._id);",
+                  "    console.log('Session ID set to:', res.data.session._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Survey on Autonomous Multi-Agent Research Assistants\",\n  \"researchQuestion\": \"What are the main architectural paradigms for agentic information synthesis?\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/research/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "research", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "2. Get All Sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/research/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "research", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "3. Get Session By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/research/sessions/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "research", "sessions", "{{sessionId}}"]
+            }
+          }
+        },
+        {
+          "name": "4. Execute Full Pipeline for Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/research/sessions/{{sessionId}}/execute",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "research", "sessions", "{{sessionId}}", "execute"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
